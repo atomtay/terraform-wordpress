@@ -14,5 +14,5 @@ variable "skip_final_snapshot" {
 
 variable "db_instance_class" {
   type    = string
-  default = "db.t3.small"
+  default = "db.t4g.micro"
 }

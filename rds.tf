@@ -11,38 +11,24 @@ resource "aws_security_group" "db_sg" {
 resource "aws_vpc_security_group_ingress_rule" "db_ingress" {
   security_group_id = aws_security_group.db_sg.id
   ip_protocol       = "tcp"
-  from_port         = 3306
-  to_port           = 3306
+  from_port         = 5432
+  to_port           = 5432
   cidr_ipv4         = "10.0.0.0/16"
 }
 
-resource "aws_rds_cluster" "default" {
-
-  db_subnet_group_name   = aws_db_subnet_group.db_subnets.name
-  availability_zones     = data.aws_availability_zones.available.names
-  vpc_security_group_ids = [aws_security_group.db_sg.id]
-  port                   = 3306
-
-  database_name      = "wordpress"
-  cluster_identifier = "wordpress-db"
-  engine             = "aurora-mysql"
-  engine_version     = "5.7"
-  engine_mode        = "provisioned"
-  storage_encrypted  = true
-
-  master_username             = "postgres"
+resource "aws_db_instance" "mariadb" {
+  allocated_storage           = 10
+  auto_minor_version_upgrade  = true
+  db_name                     = "wordpress"
+  db_subnet_group_name        = aws_db_subnet_group.db_subnets.name
+  engine                      = "mariadb"
+  engine_version              = "10.11"
+  instance_class              = var.db_instance_class
+  username                    = "admin"
   manage_master_user_password = true
-
-  backup_retention_period = var.db_backup_retention
-  preferred_backup_window = "07:00-09:00"
-  skip_final_snapshot     = var.skip_final_snapshot
-}
-
-resource "aws_rds_cluster_instance" "instances" {
-  count              = 2
-  identifier         = "wordpress-db-instance-${count.index}"
-  cluster_identifier = aws_rds_cluster.default.id
-  instance_class     = var.db_instance_class
-  engine             = aws_rds_cluster.default.engine
-  engine_version     = aws_rds_cluster.default.engine_version
+  parameter_group_name        = "default.mysql8.0"
+  port                        = 5432
+  skip_final_snapshot         = true
+  storage_encrypted           = true
+  vpc_security_group_ids      = [aws_security_group.db_sg.id]
 }
