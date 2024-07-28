@@ -26,7 +26,6 @@ resource "aws_db_instance" "mariadb" {
   instance_class              = var.db_instance_class
   username                    = "admin"
   manage_master_user_password = true
-  parameter_group_name        = "default.mysql8.0"
   port                        = 5432
   skip_final_snapshot         = true
   storage_encrypted           = true
