@@ -12,21 +12,32 @@ module "eks" {
   subnet_ids = aws_subnet.private.*.id
 
   enable_cluster_creator_admin_permissions = true
+}
 
-  eks_managed_node_group_defaults = {
-    ami_type = "AL2_x86_64"
-  }
 
-  eks_managed_node_groups = {
-    one = {
-      name = "node-group-1"
+module "fargate_profile" {
+  source = "terraform-aws-modules/eks/aws//modules/fargate-profile"
 
-      instance_types = ["t3.micro"] # Had to increase on-demand standard instance quota at account-level
+  name         = "fargate-profile"
+  cluster_name = module.eks.cluster_name
 
-      min_size     = 1
-      max_size     = 3
-      desired_size = 1
+  subnet_ids = aws_subnet.private.*.id
+  selectors = [{
+    namespace = "default" # Todo: deploy to and select from non-default namespace
+  }]
+}
 
-    }
-  }
+module "coredns_profile" {
+  source = "terraform-aws-modules/eks/aws//modules/fargate-profile"
+
+  name         = "coredns-profile"
+  cluster_name = module.eks.cluster_name
+
+  subnet_ids      = aws_subnet.private.*.id
+  create_iam_role = false
+  iam_role_arn    = module.fargate_profile.iam_role_arn
+  selectors = [{
+    namespace = "kube-system",
+    labels    = { k8s-app = "kube-dns" }
+  }]
 }

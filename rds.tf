@@ -11,8 +11,8 @@ resource "aws_security_group" "db_sg" {
 resource "aws_vpc_security_group_ingress_rule" "db_ingress" {
   security_group_id = aws_security_group.db_sg.id
   ip_protocol       = "tcp"
-  from_port         = 5432
-  to_port           = 5432
+  from_port         = 3306
+  to_port           = 3306
   cidr_ipv4         = "10.0.0.0/16"
 }
 
@@ -26,7 +26,7 @@ resource "aws_db_instance" "mariadb" {
   instance_class              = var.db_instance_class
   username                    = "admin"
   manage_master_user_password = true
-  port                        = 5432
+  port                        = 3306
   skip_final_snapshot         = true
   storage_encrypted           = true
   vpc_security_group_ids      = [aws_security_group.db_sg.id]
