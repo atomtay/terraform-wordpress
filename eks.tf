@@ -6,7 +6,12 @@ module "eks" {
   cluster_version = "1.30"
 
   cluster_endpoint_public_access = true
-  cluster_addons                 = {}
+  cluster_addons = {
+    aws-efs-csi-driver = {
+      timeout = 30
+      profile = module.fargate_profile
+    }
+  }
 
   vpc_id     = aws_vpc.main.id
   subnet_ids = aws_subnet.private.*.id
@@ -41,3 +46,14 @@ module "coredns_profile" {
     labels    = { k8s-app = "kube-dns" }
   }]
 }
+
+# resource "helm_release" "wordpress" {
+#   name       = "wordpress-release"
+#   repository = "https://charts.bitnami.com/bitnami"
+#   chart      = "wordpress"
+#   version    = "23.0.0"
+#   values     = [file("wordpress.yaml")]
+#   namespace  = "default"
+#   timeout    = 60
+# }
+# Pod not supported on Fargate: volumes not supported: wordpress-data not supported because: PVC wordpress-release not bound

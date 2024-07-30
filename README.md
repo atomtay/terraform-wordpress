@@ -11,5 +11,8 @@ terraform init
 
 terraform plan -var-file default.tfvars
 terraform apply -var-file default.tfvars
+
+## Create .kubeconfig
+aws eks --region us-east-2 update-kubeconfig --name limble
 ```
 

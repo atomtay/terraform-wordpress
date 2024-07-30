@@ -1,0 +1,6 @@
+mariadb:
+  enabled: false
+persistence:
+  storageClass: efs-sc
+  accessModes:
+    - ReadWriteMany
