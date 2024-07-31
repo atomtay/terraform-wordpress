@@ -1,6 +1,10 @@
+global:
+  defaultStorageClass: efs-sc
 mariadb:
   enabled: false
+commonLabels:
+  app: my-pv
 persistence:
-  storageClass: efs-sc
-  accessModes:
-    - ReadWriteMany
+  selector:
+    matchLabels:
+      app: my-pv

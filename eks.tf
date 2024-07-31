@@ -7,9 +7,11 @@ module "eks" {
 
   cluster_endpoint_public_access = true
   cluster_addons = {
-    aws-efs-csi-driver = {
-      timeout = 30
-      profile = module.fargate_profile
+    coredns = {
+      namespace = "kube-system"
+      labels = {
+        k8s-app = "kube-dns"
+      }
     }
   }
 
@@ -46,6 +48,45 @@ module "coredns_profile" {
     labels    = { k8s-app = "kube-dns" }
   }]
 }
+
+resource "kubernetes_storage_class" "efs_sc" {
+  metadata {
+    name = "efs-sc"
+    annotations = {
+      "storageclass.kubernetes.io/is-default-class" : "true"
+    }
+  }
+  storage_provisioner = "efs.csi.aws.com"
+
+}
+
+resource "kubernetes_persistent_volume" "wordpress_pv" {
+  metadata {
+    name = "efs-pv"
+  }
+
+  spec {
+    persistent_volume_source {
+      csi {
+        driver        = "efs.csi.aws.com"
+        volume_handle = aws_efs_file_system.files.id
+      }
+    }
+    capacity = {
+      storage = "5Gi"
+    }
+    volume_mode                      = "Filesystem"
+    access_modes                     = ["ReadWriteOnce"]
+    storage_class_name               = "efs-sc"
+    persistent_volume_reclaim_policy = "Retain"
+    claim_ref {
+      name = "efs-claim"
+    }
+  }
+}
+
+## TODO: migrate `claim.yaml` into Terraform management;
+## for now it is set with `kubectl apply -f claim.yaml`
 
 # resource "helm_release" "wordpress" {
 #   name       = "wordpress-release"
