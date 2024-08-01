@@ -2,9 +2,14 @@ global:
   defaultStorageClass: efs-sc
 mariadb:
   enabled: false
-commonLabels:
-  app: my-pv
 persistence:
-  selector:
-    matchLabels:
-      app: my-pv
+  existingClaim: efs-claim
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+externalDatabase:
+  host: terraform-20240729221130146500000008.clo0oeseswx8.us-east-2.rds.amazonaws.com
+  user: admin
+  password: REDACTED
+  database: wordpress
