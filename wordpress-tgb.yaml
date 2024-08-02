@@ -1,0 +1,12 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: my-tgb
+spec:
+ nodeSelector:
+    matchLabels:
+      kubernetes.io/hostname: fargate-ip-10-0-5-65.us-east-2.compute.internal
+  serviceRef:
+    name: wordpress-bitnami # route traffic to the awesome-service
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-2:849016782698:targetgroup/k8s-default-wordpres-9429a480dc/50df71a7bf72946b

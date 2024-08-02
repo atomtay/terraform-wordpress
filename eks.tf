@@ -54,10 +54,10 @@ module "coredns_profile" {
   }]
 }
 
-module "efs_csi_driver_profile" {
+module "driver_profile" {
   source = "terraform-aws-modules/eks/aws//modules/fargate-profile"
 
-  name         = "efs-csi-driver-profile"
+  name         = "driver-profile"
   cluster_name = module.eks.cluster_name
 
   subnet_ids      = aws_subnet.private.*.id
@@ -67,7 +67,6 @@ module "efs_csi_driver_profile" {
     namespace = "kube-system"
   }]
 }
-
 resource "kubernetes_storage_class" "efs_sc" {
   metadata {
     name = "efs-sc"
@@ -111,6 +110,11 @@ resource "helm_release" "wordpress" {
   version    = "23.0.0"
   values     = [file("wordpress.yaml")]
   namespace  = "default"
+
+  set {
+    name  = "externalDatabase.password"
+    value = tostring(var.db_password)
+  }
 }
 
 ## TODO: migrate `claim.yaml` into Terraform management;
@@ -128,3 +132,31 @@ resource "kubernetes_namespace" "aws-observability" {
 
 ## TODO: migrate `logging-conf.yaml` configmap into terraform management
 ## kubectl apply -f logging-conf.yaml
+
+resource "helm_release" "load-balancer-controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  set {
+    name  = "clusterName"
+    value = module.eks.cluster_name
+  }
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
+  set {
+    name  = "region"
+    value = var.region
+  }
+  set {
+    name  = "vpcId"
+    value = aws_vpc.main.id
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  }
+  namespace = "kube-system"
+}

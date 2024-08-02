@@ -16,3 +16,12 @@ terraform apply -var-file default.tfvars
 aws eks --region us-east-2 update-kubeconfig --name limble
 ```
 
+## Items to import into TF management:
+- iamserviceaccount for load balancing:
+```
+aws iam create-policy \
+--policy-name AWSLoadBalancerControllerIAMPolicy \
+--policy-document file://iam_policy.json
+
+eksctl create iamserviceaccount --cluster=limble --namespace=kube-system --name=aws-load-balancer-controller --attach-policy-arn=arn:aws:iam::849016782698:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
+```

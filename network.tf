@@ -34,6 +34,9 @@ resource "aws_subnet" "public" {
   cidr_block              = "10.0.${count.index}.0/24"
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
+  tags = {
+    type = "public"
+  }
 }
 
 resource "aws_route_table_association" "public_association" {
@@ -57,6 +60,9 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.${count.index + length(data.aws_availability_zones.available.names)}.0/24"
   availability_zone = data.aws_availability_zones.available.names[count.index]
+  tags = {
+    type = "private"
+  }
 }
 
 resource "aws_route_table_association" "private_association" {
