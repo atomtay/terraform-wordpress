@@ -2,3 +2,4 @@ region = "us-east-2"
 db_backup_retention = 1
 skip_final_snapshot = true
 db_instance_class = db.t3.small
+db_password = "trust-no-one"
